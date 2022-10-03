@@ -45,6 +45,11 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
+app.use((req, res) => {
+  console.log('urlll', req.url);
+  res.sendFile(path.join(__dirname, `public/${req.url}`));
+})
+
 Product.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
 User.hasMany(Product);
 User.hasOne(Cart);
