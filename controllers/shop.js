@@ -58,18 +58,25 @@ exports.getCart = (req, res, next) => {
       return cart
         .getProducts()
         .then(products => {
-          res.render('shop/cart', {
-            path: '/cart',
-            pageTitle: 'Your Cart',
+          res.status(200).json({
+            success: true,
             products: products
-          });
+          })
+          // res.render('shop/cart', {
+          //   path: '/cart',
+          //   pageTitle: 'Your Cart',
+          //   products: products
+          // });  
         })
-        .catch(err => console.log(err));
+        .catch(err => { res.status(500).json({ success: false, message: err }) });
     })
-    .catch(err => console.log(err));
+    .catch(err => res.status(500).json({ success: false, message: err }));
 };
 
 exports.postCart = (req, res, next) => {
+  if (!req.body.productId) {
+    return res.status(400).json({ success: false, message: 'Product Id is missing' })
+  }
   const prodId = req.body.productId;
   let fetchedCart;
   let newQuantity = 1;
@@ -90,7 +97,7 @@ exports.postCart = (req, res, next) => {
         newQuantity = oldQuantity + 1;
         return product;
       }
-      return Product.findByPk(prodId);
+      return Product.findByPk(prodId)
     })
     .then(product => {
       return fetchedCart.addProduct(product, {
@@ -98,11 +105,12 @@ exports.postCart = (req, res, next) => {
       });
     })
     .then(() => {
-      res.redirect('/cart');
+      res.status(200).json({ success: true, message: 'Successfully added the product' })
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      res.status(500).json({ success: false, message: 'Error Occured' })
+    });
 };
-
 exports.postCartDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
   req.user
